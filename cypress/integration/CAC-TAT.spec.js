@@ -2,6 +2,8 @@
 
 //define a descricao da suite de testes e uma funcao de callback
 describe('Central de Atendimento ao Cliente TAT', function(){
+    const THREE_SECONDS_IN_MS = 3000
+
     this.beforeEach(function() {
         cy.visit('./src/index.html')
     })
@@ -16,22 +18,37 @@ describe('Central de Atendimento ao Cliente TAT', function(){
     it('preenche os campos obrigatórios e envia o formulário:', function(){
         const longtext = "Teste, teste, teste, teste, teste, teste, teste, teste, teste" 
 
+        cy.clock() //congela o relogio do navegador
+
         cy.get('#firstName').type('Jefferson')
         cy.get('#lastName').type('Bessa')
         cy.get('#email').type('jefferson@exemplo.com')
         cy.get('#open-text-area').type(longtext, {delay: 0})
         cy.contains('button', 'Enviar').click()
+
         cy.get('.success').should('be.visible')
+
+        cy.tick(THREE_SECONDS_IN_MS) //avança o relogio do navegador por 3s
+
+        cy.get('.success').should('not.be.visible')
     })
 
     //CT003
     it('exibe mensagem de erro ao submeter o formulário com um email com formatação', function(){
+        
+        cy.clock()  
+      
         cy.get('#firstName').type('Jefferson')
         cy.get('#lastName').type('Bessa')
         cy.get('#email').type('jefferson@exemplo,com')
         cy.get('#open-text-area').type('teste')
         cy.contains('button', 'Enviar').click()
+
         cy.get('.error').should('be.visible')
+
+        cy.tick(THREE_SECONDS_IN_MS)
+
+        cy.get('.error').should('not.be.visible')
     })
 
     //CT004
@@ -50,13 +67,21 @@ describe('Central de Atendimento ao Cliente TAT', function(){
 
      //CT006
      it('exibe mensagem de erro quando o telefone se torna obrigatório mas não é preenchido antes do envio do form', function(){
+        
+        cy.clock()
+
         cy.get('#firstName').type('Jefferson')
         cy.get('#lastName').type('Bessa')
         cy.get('#email').type('jefferson@exemplo,com')
         cy.get('#phone-checkbox').check()
         cy.get('#open-text-area').type('teste')
         cy.contains('button', 'Enviar').click()
+
         cy.get('.error').should('be.visible')
+
+        cy.tick(THREE_SECONDS_IN_MS)
+
+        cy.get('.error').should('not.be.visible')
     })
 
       //CT007
@@ -81,14 +106,20 @@ describe('Central de Atendimento ao Cliente TAT', function(){
 
       //CT008
       it('exibe mensagem de erro ao submeter um formulário sem preencher os campos obrigatórios', function(){
+        cy.clock()
         cy.contains('button', 'Enviar').click()
         cy.get('.error').should('be.visible')
+        cy.tick(THREE_SECONDS_IN_MS)
+        cy.get('.error').should('not.be.visible')
     })
 
       //CT009
       it('envia o formulário com sucesso usando um comando customizado', function(){
+        cy.clock()
         cy.fillMandatoryFieldsAndSubmit();
         cy.get('.success').should('be.visible')
+        cy.tick(THREE_SECONDS_IN_MS)
+        cy.get('.success').should('not.be.visible')
     })
 
       //CT010
@@ -186,4 +217,14 @@ describe('Central de Atendimento ao Cliente TAT', function(){
 
         cy.contains('Talking About Testing').should('be.visible')  
   })
+
+       //CT019
+       it('acessa a página da política de privacidade removendo o target e então clicando no link', function(){
+        cy.get('#privacy a')
+          .invoke('removeAttr', 'target')
+          .click()
+
+        cy.contains('Talking About Testing').should('be.visible')  
+  })
+
 })
